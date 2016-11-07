@@ -93,9 +93,27 @@ public class BookService {
 		return result;
 	}
 
-	public boolean getShareStatus(String isbn) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean getShareStatus(String isbn, String lid) {
+		BookDAO dao= new BookDAO();
+		boolean result =dao.shareStatus(isbn, lid);
+		
+		return result;
+	}
+
+	public String getMyShare(String lid) {
+		
+		BookDAO dao = new BookDAO();
+		String result = dao.myShare(lid);	
+		
+		return result;
+	}
+
+	public boolean getReturnMyBook(String isbn) {
+		
+		BookDAO dao= new BookDAO();
+		boolean result =dao.returnMyBook(isbn);
+		
+		return result;
 	}
 
 

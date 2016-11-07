@@ -399,7 +399,7 @@ public class BookDAO {
 		String result = null;
 		//System.out.println("들어옴");
 		try {
-			String sql = "select bimgbase64, btitle, bauthor, rstatus, rental.mid, rental.bisbn from book " +
+			String sql = "select bimgbase64, btitle, bauthor, rstatus, rental.mid, book.bisbn from book " +
 						"left outer join rental on book.bisbn= rental.bisbn where btitle like ?";
 			pstmt= con.prepareStatement(sql);
 			pstmt.setString(1, "%" + shareKeyword + "%");
@@ -423,6 +423,113 @@ public class BookDAO {
 			System.out.println(e);
 		} finally {
 			DBTemplate.close(rs);
+			DBTemplate.close(pstmt);
+			DBTemplate.close(con);
+		} 
+		return result;
+	}
+
+	public boolean shareStatus(String isbn, String lid) {
+		Connection con = DBTemplate.getConnection();
+		PreparedStatement pstmt = null;
+		ResultSet rs=null;		
+		boolean result = false;
+		
+		try {
+			System.out.println("dao isbn:" +isbn + "로그인ID: " +lid );
+			String sql = "insert into rental (rstatus, mid, bisbn) values ('대여중',?,?)";
+			pstmt= con.prepareStatement(sql);
+			pstmt.setString(1, lid);
+			pstmt.setString(2, isbn);
+						
+			int count = pstmt.executeUpdate();
+			// 결과값은 영향을 받은 레코드의 수
+			if( count == 1 ) {
+				result = true;
+				// 정상처리이기 때문에 commit
+				DBTemplate.commit(con);
+			} else {
+				DBTemplate.rollback(con);
+			}	
+			System.out.println(result);	
+			
+		} catch (Exception e) {
+			System.out.println(e);
+		} finally {
+			DBTemplate.close(pstmt);
+			DBTemplate.close(con);
+		} 
+		return result;
+		}
+
+	public String myShare(String lid) {
+		// Database처리가 나와요!
+		// 일반적으로 Database처리를 쉽게 하기 위해서
+		// Tomcat같은 경우는 DBCP라는걸 제공해 줘요!
+		// 추가적으로 간단한 라이브러리를 이용해서 DB처리를 해 볼꺼예요!!
+		// 1. Driver Loading ( 설정에 있네.. )
+		// 2. Connection 생성
+		Connection con = DBTemplate.getConnection();
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String result = null;
+		//System.out.println("들어옴");
+		try {
+			String sql = "select btitle, bauthor, rstatus, rental.mid, book.bisbn from book " +
+						"left outer join rental on book.bisbn= rental.bisbn where rental.mid=?";
+			pstmt= con.prepareStatement(sql);
+			pstmt.setString(1, lid);
+			rs = pstmt.executeQuery();
+			System.out.println(lid);
+			
+			JSONArray arr = new JSONArray();
+			while(rs.next()) {
+				JSONObject obj = new JSONObject();
+				obj.put("title", rs.getString("btitle"));
+				obj.put("author", rs.getString("bauthor"));
+				obj.put("rstatus", rs.getString("rstatus"));
+				obj.put("mid", rs.getString("mid"));
+				obj.put("isbn", rs.getString("bisbn"));
+				arr.add(obj);
+				//System.out.println(arr.size());
+			}
+			result = arr.toJSONString();
+		} catch (Exception e) {
+			System.out.println(e);
+		} finally {
+			DBTemplate.close(rs);
+			DBTemplate.close(pstmt);
+			DBTemplate.close(con);
+		} 
+		return result;
+	}
+
+	public boolean returnMyBook(String isbn) {
+		Connection con = DBTemplate.getConnection();
+		PreparedStatement pstmt = null;
+		ResultSet rs=null;		
+		boolean result = false;
+		
+		try {
+			System.out.println("dao isbn:" +isbn );
+			String sql = "delete from rental where bisbn=?";
+			pstmt= con.prepareStatement(sql);
+			pstmt.setString(1, isbn);
+						
+			int count = pstmt.executeUpdate();
+			// 결과값은 영향을 받은 레코드의 수
+			if( count == 1 ) {
+				result = true;
+				// 정상처리이기 때문에 commit
+				DBTemplate.commit(con);
+			} else {
+				DBTemplate.rollback(con);
+			}	
+			System.out.println(result);	
+			
+		} catch (Exception e) {
+			System.out.println(e);
+		} finally {
 			DBTemplate.close(pstmt);
 			DBTemplate.close(con);
 		} 

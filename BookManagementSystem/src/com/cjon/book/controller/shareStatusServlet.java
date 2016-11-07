@@ -32,6 +32,7 @@ public class shareStatusServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// 1. 입력받고
 		String isbn = request.getParameter("isbn"); 
+		String lid = request.getParameter("lid");
 		String callback = request.getParameter("callback"); // JSONP처리를 위해서 사용
 		
 		// 2. 로직처리하고(DB처리포함)
@@ -40,7 +41,7 @@ public class shareStatusServlet extends HttpServlet {
 		// 결과를 받아오는 구조로 만들어 보아요!
 		// 로직처리를 하기 위해서 일단 Service객체를 하나 생성합니다.
 		BookService service = new BookService();		
-		boolean result = service.getShareStatus(isbn);
+		boolean result = service.getShareStatus(isbn,lid);
 		// 결과로 가져올건..DB 처리한 후 나온 책에 대한 JSON data		
 		// 3. 출력처리
 		response.setContentType("text/plain; charset=utf8");
